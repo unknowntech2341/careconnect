@@ -57,109 +57,34 @@ router.post('/create-order', async (req, res) => {
 
 // ── POST /donations/verify
 // Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature, donation_id }
-// router.post('/verify', async (req, res) => {
-//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, donation_id } = req.body;
-
-//   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !donation_id)
-//     return res.status(400).json({ error: 'All Razorpay fields and donation_id are required' });
-
-//   try {
-//     // Verify signature
-//     const body      = razorpay_order_id + '|' + razorpay_payment_id;
-//     const expected  = crypto
-//       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-//       .update(body)
-//       .digest('hex');
-
-//     if (expected !== razorpay_signature)
-//       return res.status(400).json({ error: 'Payment verification failed — invalid signature' });
-
-//     // Mark donation as completed
-//     await db.query(
-//       `UPDATE donations
-//        SET status = 'completed', razorpay_payment_id = ?, razorpay_signature = ?
-//        WHERE id = ?`,
-//       [razorpay_payment_id, razorpay_signature, donation_id]
-//     );
-
-//     // DB trigger auto-updates ngo.totalDonations & requirements.current_amount
-//     res.json({ success: true, message: 'Payment verified and donation recorded' });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Verification error' });
-//   }
-// });
 router.post('/verify', async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, donation_id } = req.body;
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !donation_id)
     return res.status(400).json({ error: 'All Razorpay fields and donation_id are required' });
 
-  const conn = await db.getConnection(); // for transaction
-
   try {
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-
-    const expected = crypto
+    // Verify signature
+    const body      = razorpay_order_id + '|' + razorpay_payment_id;
+    const expected  = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body)
       .digest('hex');
 
-    if (expected !== razorpay_signature) {
-      conn.release();
-      return res.status(400).json({ error: 'Invalid signature' });
-    }
+    if (expected !== razorpay_signature)
+      return res.status(400).json({ error: 'Payment verification failed — invalid signature' });
 
-    await conn.beginTransaction();
-
-    // Get donation details
-    const [rows] = await conn.query(
-      'SELECT ngo_id, requirement_id, amount FROM donations WHERE id = ?',
-      [donation_id]
-    );
-
-    if (!rows.length) {
-      await conn.rollback();
-      conn.release();
-      return res.status(404).json({ error: 'Donation not found' });
-    }
-
-    const { ngo_id, requirement_id, amount } = rows[0];
-
-    // 1. Update donation status
-    await conn.query(
-      `UPDATE donations 
+    // Mark donation as completed
+    await db.query(
+      `UPDATE donations
        SET status = 'completed', razorpay_payment_id = ?, razorpay_signature = ?
        WHERE id = ?`,
       [razorpay_payment_id, razorpay_signature, donation_id]
     );
 
-    // 2. Update NGO total
-    await conn.query(
-      `UPDATE ngos 
-       SET totalDonations = totalDonations + ?
-       WHERE id = ?`,
-      [amount, ngo_id]
-    );
-
-    // 3. Update requirement (if exists)
-    if (requirement_id) {
-      await conn.query(
-        `UPDATE requirements 
-         SET current_amount = current_amount + ?
-         WHERE id = ?`,
-        [amount, requirement_id]
-      );
-    }
-
-    await conn.commit();
-    conn.release();
-
-    res.json({ success: true, message: 'Payment verified & data updated' });
-
+    // DB trigger auto-updates ngo.totalDonations & requirements.current_amount
+    res.json({ success: true, message: 'Payment verified and donation recorded' });
   } catch (err) {
-    await conn.rollback();
-    conn.release();
     console.error(err);
     res.status(500).json({ error: 'Verification error' });
   }
