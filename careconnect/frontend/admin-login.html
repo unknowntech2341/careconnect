@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — CareConnect</title>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Care<span>Connect</span></a>
+    <div class="nav-links">
+      <a href="donor.html">Donor Page</a>
+      <a href="admin-login.html" class="active">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Login -->
+<div id="login-screen" class="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">Admin Login</div>
+    <p class="auth-sub">CareConnect admin panel</p>
+    <div id="login-error" class="error-msg" style="display:none"></div>
+    <label class="form-label">Username</label>
+    <input type="text" id="admin-user" placeholder="admin1">
+    <label class="form-label">Password</label>
+    <input type="password" id="admin-pass" placeholder="••••••••">
+    <button class="btn btn-primary" onclick="adminLogin()">Login</button>
+    <div class="auth-footer" style="font-size:12px;color:var(--color-text-secondary)">
+      Default: admin1 / admin123 &nbsp;|&nbsp; admin2 / admin456
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard-screen" style="display:none">
+  <nav class="sub-nav">
+    <span class="sub-nav-title">Admin Dashboard</span>
+    <span id="admin-label" class="status-badge s-admin"></span>
+    <button class="btn btn-sm" onclick="logout()">Logout</button>
+  </nav>
+  <div class="page-container">
+    <div class="metrics-grid" id="admin-metrics">
+      <div class="metric"><div class="metric-label">Loading…</div></div>
+    </div>
+
+    <div class="tab-bar" style="margin-top:20px">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-ngos')">NGOs</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-donations')">All donations</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-requirements')">Requirements</button>
+    </div>
+
+    <!-- NGOs tab -->
+    <div id="tab-ngos">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterNGOs(this,'')">All</button>
+        <button class="filter-btn" onclick="filterNGOs(this,'pending')">Pending</button>
+        <button class="filter-btn" onclick="filterNGOs(this,'approved')">Approved</button>
+        <button class="filter-btn" onclick="filterNGOs(this,'rejected')">Rejected</button>
+      </div>
+      <div id="ngo-table"></div>
+    </div>
+
+    <!-- Donations tab -->
+    <div id="tab-donations" style="display:none">
+      <div id="donations-table"></div>
+    </div>
+
+    <!-- Requirements tab -->
+    <div id="tab-requirements" style="display:none">
+      <div id="requirements-table"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let token = localStorage.getItem('admin_token');
+
+// 🔥 ADD THIS CHECK
+if(localStorage.getItem('role') !== 'admin'){
+    localStorage.removeItem('admin_token');
+    token = null;
+}
+// added prev
+let allNGOs = [];
+
+if (token) showDashboard();
+
+async function adminLogin() {
+  
+    // 🔥 ADD THIS LINE
+  localStorage.clear();
+
+
+  const username = document.getElementById('admin-user').value.trim();
+  const password = document.getElementById('admin-pass').value;
+  try {
+    const res  = await fetch(`${API}/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    token = data.token;
+    localStorage.setItem('admin_token', token);
+
+    localStorage.setItem('role', 'admin');   // ✅ ADD THIS
+      
+    document.getElementById('admin-label').textContent = data.admin.username;
+    showDashboard();
+  } catch (err) {
+    const el = document.getElementById('login-error');
+    el.textContent = err.message; el.style.display = 'block';
+  }
+}
+
+async function showDashboard() {
+  document.getElementById('login-screen').style.display    = 'none';
+  document.getElementById('dashboard-screen').style.display = 'block';
+  loadNGOs(); loadDonations(); loadRequirements();
+}
+
+async function loadNGOs(status = '') {
+  const url = status ? `${API}/admin/ngos?status=${status}` : `${API}/admin/ngos`;
+  const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  allNGOs    = await res.json();
+  renderNGOs(allNGOs);
+  // Update metrics
+  const total    = allNGOs.length;
+  const approved = allNGOs.filter(n => n.status === 'approved').length;
+  const pending  = allNGOs.filter(n => n.status === 'pending').length;
+  const totalAmt = allNGOs.reduce((s, n) => s + parseFloat(n.totalDonations), 0);
+  document.getElementById('admin-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total NGOs</div><div class="metric-value">${total}</div><div class="metric-sub">${approved} approved</div></div>
+    <div class="metric"><div class="metric-label">Pending approvals</div><div class="metric-value" style="color:#BA7517">${pending}</div></div>
+    <div class="metric"><div class="metric-label">Total donations</div><div class="metric-value">₹${totalAmt.toLocaleString('en-IN')}</div></div>`;
+}
+
+function renderNGOs(ngos) {
+  document.getElementById('ngo-table').innerHTML = ngos.map(n => `
+    <div class="admin-row">
+      <div class="admin-row-avatar">${n.name.slice(0,2).toUpperCase()}</div>
+      <div class="admin-row-info">
+        <div class="admin-row-name">${n.name}</div>
+        <div class="admin-row-meta">${n.email} &middot; ₹${parseFloat(n.totalDonations).toLocaleString('en-IN')} raised</div>
+        <div class="admin-row-desc">${n.description || ''}</div>
+      </div>
+      <span class="status-badge s-${n.status}" id="ngo-status-${n.id}">${n.status}</span>
+      <div class="admin-row-actions">
+        ${n.status !== 'approved' ? `<button class="btn btn-approve btn-sm" onclick="updateNGO(${n.id},'approved')">Approve</button>` : ''}
+        ${n.status !== 'rejected' ? `<button class="btn btn-reject btn-sm" onclick="updateNGO(${n.id},'rejected')">Reject</button>` : ''}
+      </div>
+    </div>`).join('') || '<div class="empty-state">No NGOs found.</div>';
+}
+
+async function updateNGO(id, status) {
+  await fetch(`${API}/admin/ngo/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status })
+  });
+  loadNGOs();
+}
+
+async function loadDonations() {
+  const res  = await fetch(`${API}/admin/donations`, { headers: { Authorization: `Bearer ${token}` } });
+  const data = await res.json();
+  document.getElementById('donations-table').innerHTML = data.map(d => `
+    <div class="admin-row">
+      <div class="admin-row-avatar">${d.donor_name.slice(0,2).toUpperCase()}</div>
+      <div class="admin-row-info">
+        <div class="admin-row-name">${d.donor_name} &rarr; ${d.ngoName}</div>
+        <div class="admin-row-meta">${d.requirementTitle || 'General donation'} &middot; ${new Date(d.created_at).toLocaleDateString('en-IN')}</div>
+        <div class="admin-row-desc">${d.razorpay_payment_id || '—'}</div>
+      </div>
+      <span class="status-badge s-${d.status}">${d.status}</span>
+      <div class="admin-row-amount">₹${parseFloat(d.amount).toLocaleString('en-IN')}</div>
+    </div>`).join('') || '<div class="empty-state">No donations yet.</div>';
+}
+
+async function loadRequirements() {
+  const res  = await fetch(`${API}/admin/requirements`, { headers: { Authorization: `Bearer ${token}` } });
+  const data = await res.json();
+  document.getElementById('requirements-table').innerHTML = data.map(r => {
+    const pct = Math.round((r.current_amount / r.goal_amount) * 100);
+    return `<div class="req-card">
+      <div class="req-header">
+        <span class="req-title">${r.title} <span style="font-weight:400;font-size:12px;color:var(--color-text-secondary)">— ${r.ngoName}</span></span>
+        <span class="status-badge s-${r.status}">${r.status}</span>
+      </div>
+      <div class="req-progress-label">₹${parseFloat(r.current_amount).toLocaleString('en-IN')} / ₹${parseFloat(r.goal_amount).toLocaleString('en-IN')} (${pct}%)</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    </div>`;
+  }).join('') || '<div class="empty-state">No requirements yet.</div>';
+}
+
+function filterNGOs(btn, status) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (status) renderNGOs(allNGOs.filter(n => n.status === status));
+  else renderNGOs(allNGOs);
+}
+
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tab-ngos','tab-donations','tab-requirements'].forEach(t => {
+    document.getElementById(t).style.display = t === tabId ? 'block' : 'none';
+  });
+}
+
+// function logout() {
+//   localStorage.removeItem('admin_token');
+//   location.reload();
+// }
+// code addded below
+function logout() {
+  localStorage.clear();   // 🔥 clear everything
+  location.href = "index.html";
+}
+// code added above
+</script>
+</body>
+</html>

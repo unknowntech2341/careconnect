@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Donations — CareConnect</title>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Care<span>Connect</span></a>
+    <div class="nav-links">
+      <a href="donor.html">Donate</a>
+      <a href="donor-history.html" class="active">My Donations</a>
+      <a href="ngo-login.html">NGO Login</a>
+      <a href="admin-login.html">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-container" style="max-width:680px">
+  <div class="page-header">
+    <h1>My donation history</h1>
+    <p>Enter your email to look up all your past donations.</p>
+  </div>
+
+  <div id="success-banner" style="display:none" class="success-banner">
+    Payment successful! Your donation has been recorded. Thank you!
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:10px">
+      <input type="email" id="lookup-email" placeholder="your@email.com" style="flex:1">
+      <button class="btn" onclick="lookupHistory()">Look up</button>
+    </div>
+  </div>
+
+  <div id="history-container" style="display:none">
+    <div id="history-list"></div>
+    <div id="history-empty" style="display:none" class="empty-state">No donations found for this email.</div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+
+// Pre-fill email from URL param on success redirect
+const params = new URLSearchParams(window.location.search);
+if (params.get('success')) {
+  document.getElementById('success-banner').style.display = 'block';
+}
+if (params.get('email')) {
+  document.getElementById('lookup-email').value = params.get('email');
+  lookupHistory();
+}
+
+async function lookupHistory() {
+  const email = document.getElementById('lookup-email').value.trim();
+  if (!email) return;
+  const res   = await fetch(`${API}/donations/history?email=${encodeURIComponent(email)}`);
+  const data  = await res.json();
+  const cont  = document.getElementById('history-container');
+  const list  = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  cont.style.display = 'block';
+  list.innerHTML = '';
+  if (!data.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  let total = 0;
+  data.forEach(d => {
+    total += parseFloat(d.amount);
+    const div = document.createElement('div');
+    div.className = 'donation-row-card';
+    div.innerHTML = `
+      <div class="dr-left">
+        <div class="dr-avatar">${d.ngoName.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="dr-ngo">${d.ngoName}</div>
+          <div class="dr-meta">${d.requirementTitle || 'General donation'} &middot; ${new Date(d.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+          <div class="dr-txn">${d.razorpay_payment_id}</div>
+        </div>
+      </div>
+      <div class="dr-amount">₹${parseFloat(d.amount).toLocaleString('en-IN')}</div>`;
+    list.appendChild(div);
+  });
+  const summary = document.createElement('div');
+  summary.className = 'total-row';
+  summary.innerHTML = `<span>Total donated</span><span>₹${total.toLocaleString('en-IN')}</span>`;
+  list.appendChild(summary);
+}
+</script>
+</body>
+</html>

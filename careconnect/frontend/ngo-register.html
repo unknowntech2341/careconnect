@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register NGO — CareConnect</title>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Care<span>Connect</span></a>
+    <div class="nav-links">
+      <a href="donor.html">Donate</a>
+      <a href="ngo-login.html">NGO Login</a>
+    </div>
+  </div>
+</nav>
+<div class="page-container" style="max-width:520px">
+  <div class="page-header">
+    <h1>Register your NGO</h1>
+    <p>Submit your details — an admin will review and approve your application.</p>
+  </div>
+  <div class="card">
+    <div id="reg-error" class="error-msg" style="display:none"></div>
+    <div id="reg-success" class="success-banner" style="display:none">
+      Registration successful! Your NGO is pending admin approval. You'll be able to log in once approved.
+    </div>
+    <label class="form-label">NGO name *</label>
+    <input type="text" id="ngo-name" placeholder="Organisation full name">
+    <label class="form-label">Email address *</label>
+    <input type="email" id="ngo-email" placeholder="contact@ngo.org">
+    <label class="form-label">Password *</label>
+    <input type="password" id="ngo-password" placeholder="Min 8 characters">
+    <label class="form-label">Description</label>
+    <textarea id="ngo-desc" rows="3" placeholder="What does your NGO do?"></textarea>
+    <label class="form-label">Phone</label>
+    <input type="tel" id="ngo-phone" placeholder="+91 98765 XXXXX">
+    <label class="form-label">Website</label>
+    <input type="url" id="ngo-website" placeholder="https://yourngo.org">
+    <button class="btn btn-primary" style="margin-top:8px" onclick="registerNGO()">Submit application</button>
+  </div>
+</div>
+<script>
+const API = 'http://localhost:5000';
+async function registerNGO() {
+  const name     = document.getElementById('ngo-name').value.trim();
+  const email    = document.getElementById('ngo-email').value.trim();
+  const password = document.getElementById('ngo-password').value;
+  const description = document.getElementById('ngo-desc').value.trim();
+  const phone    = document.getElementById('ngo-phone').value.trim();
+  const website  = document.getElementById('ngo-website').value.trim();
+  if (!name || !email || !password) return showError('Name, email and password are required');
+  try {
+    const res  = await fetch(`${API}/auth/ngo-register`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, description, phone, website })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    document.getElementById('reg-error').style.display  = 'none';
+    document.getElementById('reg-success').style.display = 'block';
+  } catch (err) { showError(err.message); }
+}
+function showError(msg) {
+  const el = document.getElementById('reg-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+</script>
+</body>
+</html>

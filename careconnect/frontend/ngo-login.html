@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGO Login — CareConnect</title>
+<link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Care<span>Connect</span></a>
+    <div class="nav-links">
+      <a href="donor.html">Donate</a>
+      <a href="ngo-login.html" class="active">NGO Login</a>
+      <a href="admin-login.html">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<div id="login-screen" class="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">NGO Login</div>
+    <p class="auth-sub">Access your CareConnect dashboard</p>
+    <div id="login-error" class="error-msg" style="display:none"></div>
+    <label class="form-label">Email</label>
+    <input type="email" id="ngo-email" placeholder="ngo@email.com">
+    <label class="form-label">Password</label>
+    <input type="password" id="ngo-password" placeholder="••••••••">
+    <button class="btn btn-primary" onclick="ngoLogin()">Login</button>
+    <div class="auth-footer">
+      Not registered? <a href="ngo-register.html">Register your NGO</a>
+    </div>
+  </div>
+</div>
+
+<div id="dashboard-screen" style="display:none">
+  <nav class="sub-nav">
+    <span id="dash-name" class="sub-nav-title"></span>
+    <span id="dash-status" class="status-badge"></span>
+    <button class="btn btn-sm" onclick="logout()">Logout</button>
+  </nav>
+  <div class="page-container">
+    <div class="metrics-grid" id="ngo-metrics"></div>
+    <div class="two-col" style="margin-top:20px">
+      <div>
+        <div class="section-label-row">
+          <h3 class="section-label">Requirements</h3>
+          <button class="btn btn-sm" onclick="showAddReq()">+ Add</button>
+        </div>
+        <div id="req-list"></div>
+        <div id="add-req-form" style="display:none" class="card" style="margin-top:12px">
+          <h4 style="margin-bottom:12px;font-size:15px">New requirement</h4>
+          <label class="form-label">Title</label>
+          <input type="text" id="req-title" placeholder="e.g. Food Supplies">
+          <label class="form-label">Description</label>
+          <textarea id="req-desc" rows="2" placeholder="Brief description"></textarea>
+          <label class="form-label">Goal amount (₹)</label>
+          <input type="number" id="req-goal" placeholder="25000">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" onclick="addRequirement()">Save</button>
+            <button class="btn" onclick="document.getElementById('add-req-form').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="section-label">Recent donations</h3>
+        <div id="donation-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+// 🔥 ADD THIS BLOCK
+if(localStorage.getItem("role") !== "ngo"){
+    localStorage.clear();
+}
+// above added
+
+let token = localStorage.getItem('ngo_token');
+let ngoData = JSON.parse(localStorage.getItem('ngo_data') || 'null');
+
+// if (token && ngoData) showDashboard();
+//addded below
+if (token && ngoData && localStorage.getItem("role") === "ngo") {
+    showDashboard();
+}
+//addeded above
+
+async function ngoLogin() {
+   // 🔥 CLEAR OLD SESSION
+  localStorage.clear();
+  // above added
+  const email    = document.getElementById('ngo-email').value.trim();
+  const password = document.getElementById('ngo-password').value;
+  try {
+    const res  = await fetch(`${API}/auth/ngo-login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    token   = data.token;
+    ngoData = data.ngo;
+    localStorage.setItem('ngo_token', token);
+    localStorage.setItem('ngo_data', JSON.stringify(ngoData));
+    // 🔥 ADD THIS
+localStorage.setItem("role", "ngo");
+//above code added
+    showDashboard();
+  } catch (err) {
+    const el = document.getElementById('login-error');
+    el.textContent = err.message;
+    el.style.display = 'block';
+  }
+}
+
+async function showDashboard() {
+  document.getElementById('login-screen').style.display    = 'none';
+  document.getElementById('dashboard-screen').style.display = 'block';
+  document.getElementById('dash-name').textContent = ngoData.name;
+  const sb = document.getElementById('dash-status');
+  sb.textContent = ngoData.status.charAt(0).toUpperCase() + ngoData.status.slice(1);
+  sb.className   = `status-badge s-${ngoData.status}`;
+  loadSummary();
+  loadRequirements();
+  loadDonations();
+}
+
+async function loadSummary() {
+  const res  = await fetch(`${API}/ngo/${ngoData.id}/summary`, { headers: { Authorization: `Bearer ${token}` } });
+  const data = await res.json();
+  document.getElementById('ngo-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total received</div><div class="metric-value">₹${parseFloat(data.totalDonations).toLocaleString('en-IN')}</div></div>
+    <div class="metric"><div class="metric-label">Donations</div><div class="metric-value">${data.donationCount}</div></div>`;
+}
+
+async function loadRequirements() {
+  const res  = await fetch(`${API}/ngo/${ngoData.id}/requirements`);
+  const reqs = await res.json();
+  const list = document.getElementById('req-list');
+  if (!reqs.length) { list.innerHTML = '<div class="empty-state">No requirements yet.</div>'; return; }
+  list.innerHTML = reqs.map(r => {
+    const pct = Math.round((r.current_amount / r.goal_amount) * 100);
+    return `<div class="req-card">
+      <div class="req-header"><span class="req-title">${r.title}</span><span class="status-badge s-${r.status}">${r.status}</span></div>
+      <div class="req-desc">${r.description}</div>
+      <div class="req-progress-label">₹${parseFloat(r.current_amount).toLocaleString('en-IN')} / ₹${parseFloat(r.goal_amount).toLocaleString('en-IN')} (${pct}%)</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+async function loadDonations() {
+  const res  = await fetch(`${API}/ngo/${ngoData.id}/donations`, { headers: { Authorization: `Bearer ${token}` } });
+  const data = await res.json();
+  const list = document.getElementById('donation-list');
+  if (!data.length) { list.innerHTML = '<div class="empty-state">No donations yet.</div>'; return; }
+  list.innerHTML = data.slice(0,10).map(d => `
+    <div class="donation-row-card">
+      <div class="dr-left">
+        <div class="dr-avatar">${d.donor_name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="dr-ngo">${d.donor_name}</div>
+          <div class="dr-meta">${d.requirementTitle || 'General'} &middot; ${new Date(d.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+        </div>
+      </div>
+      <div class="dr-amount">₹${parseFloat(d.amount).toLocaleString('en-IN')}</div>
+    </div>`).join('');
+}
+
+function showAddReq() {
+  document.getElementById('add-req-form').style.display = 'block';
+}
+
+async function addRequirement() {
+  const title       = document.getElementById('req-title').value.trim();
+  const description = document.getElementById('req-desc').value.trim();
+  const goal_amount = parseFloat(document.getElementById('req-goal').value);
+  if (!title || !goal_amount) return alert('Title and goal amount required');
+  await fetch(`${API}/ngo/${ngoData.id}/requirements`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ title, description, goal_amount })
+  });
+  document.getElementById('add-req-form').style.display = 'none';
+  loadRequirements();
+}
+
+// function logout() {
+//   localStorage.removeItem('ngo_token');
+//   localStorage.removeItem('ngo_data');
+//   location.reload();
+// }
+
+// addded below 
+function logout() {
+  localStorage.clear();   // 🔥 clear everything
+  location.href = "index.html";
+}
+// added above
+</script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+/* CareConnect — Shared Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal:        #1D9E75;
+  --teal-light:  #E1F5EE;
+  --teal-dark:   #085041;
+  --amber:       #BA7517;
+  --amber-light: #FAEEDA;
+  --blue:        #185FA5;
+  --blue-light:  #E6F1FB;
+  --red:         #A32D2D;
+  --red-light:   #FCEBEB;
+  --green:       #3B6D11;
+  --green-light: #EAF3DE;
+  --coral:       #D85A30;
+  --coral-light: #FAECE7;
+  --text:        #1a1a1a;
+  --text-muted:  #6b7280;
+  --border:      rgba(0,0,0,0.1);
+  --surface:     #ffffff;
+  --bg:          #f8f9fa;
+  --radius:      10px;
+  --radius-lg:   14px;
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+/* ── Navbar ── */
+.navbar { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; height: 54px; gap: 32px; }
+.logo { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; color: var(--teal); text-decoration: none; letter-spacing: -0.3px; }
+.logo span { color: var(--text-muted); font-weight: 400; }
+.nav-links { display: flex; gap: 4px; margin-left: auto; }
+.nav-links a { padding: 6px 12px; font-size: 14px; border-radius: 8px; text-decoration: none; color: var(--text-muted); transition: all 0.15s; }
+.nav-links a:hover, .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+.sub-nav { background: #fff; border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 12px; height: 48px; }
+.sub-nav-title { font-weight: 500; font-size: 15px; flex: 1; }
+
+/* ── Layout ── */
+.page-container { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.page-header p { font-size: 14px; color: var(--text-muted); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
+.card > * + * { margin-top: 12px; }
+
+/* ── Form elements ── */
+.form-label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; margin-top: 12px; }
+input[type=text], input[type=email], input[type=password], input[type=tel], input[type=url], input[type=number], select, textarea {
+  width: 100%; padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+  outline: none; transition: border 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--teal); }
+textarea { resize: vertical; }
+
+/* ── Buttons ── */
+.btn { padding: 8px 16px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: #fff; color: var(--text); transition: all 0.15s; text-decoration: none; display: inline-block; }
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+.btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
+.btn-lg { padding: 11px 24px; font-size: 15px; border-radius: 10px; }
+.btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 7px; }
+.btn-approve { background: var(--green-light); color: var(--green); border-color: transparent; }
+.btn-approve:hover { background: #C0DD97; }
+.btn-reject  { background: var(--red-light); color: var(--red); border-color: transparent; }
+.btn-reject:hover { background: #F7C1C1; }
+.btn-razorpay { background: #528FF0; color: #fff; border: none; width: 100%; padding: 11px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+.btn-razorpay:hover { background: #3d7de0; }
+.btn-razorpay:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Status badges ── */
+.status-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+.s-approved, .s-completed, .s-active { background: var(--green-light); color: var(--green); }
+.s-pending   { background: var(--amber-light); color: var(--amber); }
+.s-rejected, .s-failed  { background: var(--red-light); color: var(--red); }
+.s-admin     { background: var(--blue-light); color: var(--blue); }
+
+/* ── Metrics ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; }
+.metric { background: var(--bg); border-radius: 10px; padding: 14px 16px; }
+.metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.metric-value { font-size: 22px; font-weight: 600; font-family: 'Sora', sans-serif; }
+.metric-sub   { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Section label ── */
+.section-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; }
+.section-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+/* ── NGO select cards ── */
+.ngo-select-card { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px; cursor: pointer; transition: border-color 0.15s; margin-bottom: 10px; }
+.ngo-select-card:hover { border-color: var(--teal); }
+.ngo-select-card.selected { border-color: var(--teal); background: var(--teal-light); }
+.ngo-card-inner { display: flex; align-items: flex-start; gap: 12px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--teal-light); color: var(--teal-dark); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.ngo-card-name { font-size: 14px; font-weight: 500; }
+.ngo-card-desc { font-size: 12px; color: var(--text-muted); }
+.ngo-card-total { font-size: 12px; color: var(--teal); margin-top: 3px; font-weight: 500; }
+
+/* ── Amount pills ── */
+.amount-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.amount-pills button { padding: 5px 12px; font-size: 13px; border-radius: 20px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.amount-pills button:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
+
+/* ── Donation rows ── */
+.donation-row-card { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.donation-row-card:last-child { border-bottom: none; }
+.dr-left  { display: flex; align-items: center; gap: 10px; flex: 1; }
+.dr-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--teal-light); color: var(--teal-dark); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.dr-ngo   { font-size: 14px; font-weight: 500; }
+.dr-meta  { font-size: 12px; color: var(--text-muted); }
+.dr-txn   { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.dr-amount { font-size: 15px; font-weight: 600; color: var(--teal-dark); }
+.total-row { display: flex; justify-content: space-between; padding: 12px 0 0; font-weight: 500; border-top: 1px solid var(--border); margin-top: 4px; }
+
+/* ── Requirements ── */
+.req-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; background: #fff; }
+.req-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.req-title  { font-size: 14px; font-weight: 500; }
+.req-desc   { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.req-progress-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+.progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width 0.3s; }
+
+/* ── Admin rows ── */
+.admin-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.admin-row:last-child { border-bottom: none; }
+.admin-row-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--teal-light); color: var(--teal-dark); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.admin-row-info { flex: 1; }
+.admin-row-name { font-size: 14px; font-weight: 500; }
+.admin-row-meta { font-size: 12px; color: var(--text-muted); }
+.admin-row-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.admin-row-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.admin-row-amount { font-size: 15px; font-weight: 600; min-width: 90px; text-align: right; }
+
+/* ── Tabs & filters ── */
+.tab-bar { display: flex; gap: 2px; background: #ededec; border-radius: 10px; padding: 3px; width: fit-content; }
+.tab-btn { padding: 6px 16px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; background: transparent; color: var(--text-muted); font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.tab-btn.active { background: #fff; color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.filter-row { display: flex; gap: 8px; margin-bottom: 14px; margin-top: 14px; }
+.filter-btn { padding: 5px 14px; font-size: 13px; border-radius: 20px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.filter-btn.active, .filter-btn:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
+
+/* ── Auth ── */
+.auth-container { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 54px); padding: 24px; }
+.auth-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 380px; }
+.auth-card > * + * { margin-top: 12px; }
+.auth-logo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600; color: var(--teal); }
+.auth-sub  { font-size: 14px; color: var(--text-muted); }
+.auth-footer { font-size: 13px; color: var(--text-muted); text-align: center; }
+.auth-footer a { color: var(--teal); text-decoration: none; }
+
+/* ── Banners ── */
+.info-banner    { background: var(--blue-light); color: var(--blue); font-size: 13px; padding: 9px 13px; border-radius: 8px; }
+.success-banner { background: var(--green-light); color: var(--green); font-size: 14px; padding: 12px 16px; border-radius: 8px; }
+.selected-banner { background: var(--teal-light); color: var(--teal-dark); font-size: 13px; padding: 9px 13px; border-radius: 8px; }
+.error-msg { background: var(--red-light); color: var(--red); font-size: 13px; padding: 9px 13px; border-radius: 8px; }
+.empty-state { text-align: center; padding: 24px; color: var(--text-muted); font-size: 14px; }
+
+/* ── Skeleton ── */
+.skeleton-card { height: 80px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200%; border-radius: var(--radius); margin-bottom: 10px; animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+
+/* ── Hero ── */
+.hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, var(--teal-light) 0%, transparent 100%); }
+.hero-title { font-family: 'Sora', sans-serif; font-size: 36px; font-weight: 700; color: var(--teal-dark); margin-bottom: 12px; }
+.hero-sub { font-size: 16px; color: var(--text-muted); max-width: 480px; margin: 0 auto 28px; }
+.home-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+@media (max-width:700px) { .home-cards { grid-template-columns: 1fr; } }
+.home-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+.home-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.home-card p  { font-size: 13px; color: var(--text-muted); }
+.home-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+.home-card-icon.teal  { background: var(--teal-light); color: var(--teal); }
+.home-card-icon.blue  { background: var(--blue-light); color: var(--blue); }
+.home-card-icon.amber { background: var(--amber-light); color: var(--amber); }
+
+/* ===== UI UPGRADE (REALISTIC LOOK) ===== */
+
+/* Smooth global feel */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Cards - depth */
+.card, .auth-card, .home-card {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.card:hover, .home-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* Navbar modern feel */
+.navbar {
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.9);
+}
+
+/* Buttons upgrade */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  box-shadow: 0 2px 6px rgba(29,158,117,0.25);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 10px rgba(29,158,117,0.35);
+}
+
+/* Inputs more natural */
+input, select, textarea {
+  background: #fafafa;
+}
+
+input:focus, textarea:focus, select:focus {
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(29,158,117,0.15);
+}
+
+/* NGO cards hover */
+.ngo-select-card {
+  transition: all 0.2s ease;
+}
+
+.ngo-select-card:hover {
+  transform: scale(1.01);
+}
+
+/* Donation row hover */
+.donation-row-card {
+  transition: background 0.2s ease;
+}
+
+.donation-row-card:hover {
+  background: #fafafa;
+}
+
+/* Metrics better feel */
+.metric {
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Hero improvement */
+.hero {
+  background: linear-gradient(180deg, #E1F5EE 0%, #f8f9fa 100%);
+}
+
+.hero-title {
+  letter-spacing: -1px;
+}
+
+/* Navbar links */
+.nav-links a {
+  font-weight: 500;
+}
+
+/* Better spacing */
+.card {
+  padding: 20px 22px;
+}
+
+/* Subtle hover for buttons */
+.btn:hover {
+  transform: translateY(-1px);
+}
+/* :root {
+ --bg: #0f172a;
+} */
+/* body {
+  background: linear-gradient(180deg, #f8f9fa, #eef3f1);
+} */
+
+/* CareConnect — Realistic UI Overhaul */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  /* 1. Sophisticated Palette (Less "Neon", More "Organic") */
+  --brand:        #0D684D;      /* Deep Forest Green (Trustworthy) */
+  --brand-light:  #F0F7F4;      /* Hint of Mint */
+  --brand-soft:   #D1E7DD;
+  
+  /* 2. Neutral Depth (Avoids clinical white/gray) */
+  --bg:           #FBFBF9;      /* Warm "Paper" White */
+  --surface:      #FFFFFF;
+  --text:         #1F2937;      /* Near Black */
+  --text-muted:   #64748B;      /* Slate Gray */
+  --border:       #E2E8F0;      /* Soft Slate Border */
+  
+  /* 3. Elevation & Shape */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --radius:       8px;          /* Slightly tighter corners for a modern feel */
+}
+
+body { 
+  font-family: 'Inter', sans-serif; /* Cleaner, more professional body font */
+  background-color: var(--bg); 
+  color: var(--text); 
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── The Navigation (Glassmorphism) ── */
+.navbar { 
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+
+.logo { 
+  font-family: 'Sora', sans-serif;
+  color: var(--brand);
+  letter-spacing: -0.5px;
+}
+
+/* ── Realistic Card Depth ── */
+.card { 
+  background: var(--surface); 
+  border: 1px solid var(--border); 
+  border-radius: var(--radius); 
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-soft);
+}
+
+/* ── NGO Selection Cards (Tactile Feedback) ── */
+.ngo-select-card { 
+  border: 1px solid var(--border);
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.ngo-select-card.selected { 
+  border-color: var(--brand); 
+  background: var(--brand-light); 
+  box-shadow: inset 0 0 0 1px var(--brand); /* Double border effect */
+}
+
+/* Add a subtle "Selected" indicator bar */
+.ngo-select-card.selected::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--brand);
+}
+
+/* ── Amount Pills (Modern Toggle Look) ── */
+.amount-pills button { 
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.amount-pills button:hover {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+/* ── Inputs (Natural & Focused) ── */
+input[type=text], input[type=email], select {
+  background: #FDFDFD;
+  border: 1.5px solid var(--border); /* Thicker but lighter border */
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+input:focus { 
+  background: #fff;
+  border-color: var(--brand); 
+  box-shadow: 0 0 0 4px rgba(13, 104, 77, 0.1); /* Soft brand halo */
+}
+
+/* ── Primary Action Button ── */
+.btn-primary { 
+  background: var(--brand); 
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: none;
+  box-shadow: 0 4px 14px 0 rgba(13, 104, 77, 0.25);
+}
+
+.btn-primary:hover { 
+  background: #0a523d; 
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(13, 104, 77, 0.3);
+}
+
+/* ── The Avatar (Personalized Look) ── */
+.avatar, .dr-avatar { 
+  background: linear-gradient(135deg, var(--brand-soft), #fff);
+  border: 1px solid var(--brand-soft);
+  color: var(--brand);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ── Glassmorphism Donation Form ── */
+.card.donation-form {
+  /* Semi-transparent white */
+  background: rgba(255, 255, 255, 0.7); 
+  
+  /* The "Glass" blur effect */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  
+  /* A very subtle, "shiny" border */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  
+  /* Stronger shadow to emphasize the "floating" feel */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  
+  /* Ensure it doesn't look flat */
+  position: relative;
+  z-index: 10;
+}
+
+/* Subtle inner glow for the form */
+.card.donation-form::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+
+
+
+/* Decorative Background Accent */
+.hero-bg-accent {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  height: 600px;
+  background: radial-gradient(circle at 70% 20%, var(--teal-light), transparent 70%);
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* Social Proof Styling */
+.social-proof {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: fadeIn 1s ease-out;
+}
+
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.stack-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  margin-left: -10px;
+  display: inline-block;
+}
+
+.stack-dot:first-child { margin-left: 0; }
+
+.social-proof p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Animation for the "Real" Feel */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+// css for added donor 
+
+/* ── Realistic Donor Page Tonalities ── */
+
+.ngo-select-card {
+    border: 1.5px solid var(--border);
+    background: #fff;
+    margin-bottom: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.ngo-select-card:hover {
+    border-color: var(--teal);
+    background: #fbfdfc;
+    transform: translateX(4px);
+}
+
+.ngo-select-card.selected {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    box-shadow: 0 4px 12px rgba(29, 158, 117, 0.1);
+}
+
+.ngo-select-card.selected::after {
+    content: '✓';
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    color: var(--teal);
+    font-weight: bold;
+}
+
+/* ── Amount Pills ── */
+.pill-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pill-btn:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+}
+
+.pill-btn.active {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal);
+}
+
+/* ── Input Refinement ── */
+.donation-form-box input:focus {
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(29, 158, 117, 0.1);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Custom Select ── */
+.custom-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.navbar {
+  background: var(--teal-light); /* Matching the start of the gradient */
+  border-bottom: none; /* Remove the hard line so it flows into the hero */
+  backdrop-filter: blur(8px);
+}
+
+

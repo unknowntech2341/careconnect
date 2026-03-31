@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donate — CareConnect</title>
+<link rel="stylesheet" href="shared/style.css">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Care<span>Connect</span></a>
+    <div class="nav-links">
+      <a href="donor.html" class="active">Donate</a>
+      <a href="donor-history.html">My Donations</a>
+      <a href="ngo-login.html">NGO Login</a>
+      <a href="admin-login.html">Admin</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-container">
+  <div class="page-header" style="text-align: center; margin-bottom: 48px;">
+    <h1 style="font-size: 32px; font-family: 'Sora';">Support a cause</h1>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 8px auto;">Your contribution goes directly to verified organizations. No registration required.</p>
+  </div>
+
+  <div class="two-col" style="grid-template-columns: 1.2fr 1fr; align-items: start; gap: 40px;">
+    
+    <div class="selection-column">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom: 20px;">
+        <span style="background: var(--teal); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">1</span>
+        <h3 class="section-label" style="margin:0">Select an Organization</h3>
+      </div>
+      
+      <div id="ngo-list" class="data-list">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+
+    <div class="form-column" style="position: sticky; top: 100px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom: 20px;">
+        <span style="background: var(--teal); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">2</span>
+        <h3 class="section-label" style="margin:0">Donation Details</h3>
+      </div>
+
+      <div class="card donation-form-box" style="padding: 30px;">
+        <div id="selected-ngo-banner" style="display:none; background: var(--teal-light); border-left: 4px solid var(--teal); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; animation: slideIn 0.3s ease;">
+          <small style="text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: var(--teal-dark); font-size: 10px;">Contributing to</small>
+          <div id="selected-ngo-name" style="font-weight: 600; color: var(--teal-dark); font-size: 16px;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Purpose of Donation</label>
+          <select id="req-select" class="custom-select">
+            <option value="">General support for NGO</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-top:20px">
+          <label class="form-label">Contact Information</label>
+          <input type="text" id="donor-name" placeholder="Full name" style="margin-bottom:12px">
+          <input type="email" id="donor-email" placeholder="Email address">
+          <input type="tel" id="donor-phone" placeholder="Phone (Optional)" style="margin-top:12px">
+        </div>
+
+        <div class="form-group" style="margin-top:24px">
+          <label class="form-label">Support Amount (₹)</label>
+          <div class="amount-pills" style="margin-bottom: 12px;">
+            <button class="pill-btn" onclick="setAmt(500)">500</button>
+            <button class="pill-btn" onclick="setAmt(1000)">1,000</button>
+            <button class="pill-btn" onclick="setAmt(2500)">2,500</button>
+            <button class="pill-btn" onclick="setAmt(5000)">5,000</button>
+          </div>
+          <div class="amount-input-wrapper" style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">₹</span>
+            <input type="number" id="donor-amount" placeholder="Custom amount" style="padding-left: 30px; font-weight: 600; font-size: 18px;">
+          </div>
+        </div>
+
+        <button class="btn-razorpay" id="pay-btn" onclick="startPayment()" style="margin-top: 24px; font-weight: 600; letter-spacing: 0.5px; height: 50px;">
+          Proceed to Payment
+        </button>
+        <div id="pay-error" class="error-msg" style="margin-top: 15px; text-align: center;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Keep all your original script logic here - do not change variable names */
+const API = 'http://localhost:5000';
+let selectedNgoId = null;
+let selectedNgoName = '';
+
+async function loadNGOs() {
+  const res = await fetch(`${API}/ngos`);
+  const ngos = await res.json();
+  const list = document.getElementById('ngo-list');
+  list.innerHTML = '';
+  ngos.forEach(ngo => {
+    const div = document.createElement('div');
+    div.className = 'ngo-select-card';
+    div.innerHTML = `
+      <div class="ngo-card-inner">
+        <div class="avatar" style="border-radius: 12px; width: 44px; height: 44px;">${ngo.name.slice(0,2).toUpperCase()}</div>
+        <div style="flex: 1">
+          <div class="ngo-card-name" style="font-weight: 600; font-size: 15px;">${ngo.name}</div>
+          <div class="ngo-card-desc" style="font-size: 13px; line-height: 1.4; margin: 4px 0;">${ngo.description}</div>
+          <div class="ngo-card-total" style="font-size: 12px; opacity: 0.8;">₹${parseFloat(ngo.totalDonations).toLocaleString('en-IN')} impact so far</div>
+        </div>
+      </div>`;
+    div.onclick = () => selectNGO(div, ngo);
+    list.appendChild(div);
+  });
+}
+
+async function selectNGO(el, ngo) {
+  document.querySelectorAll('.ngo-select-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedNgoId = ngo.id;
+  selectedNgoName = ngo.name;
+  document.getElementById('selected-ngo-name').textContent = ngo.name;
+  document.getElementById('selected-ngo-banner').style.display = 'block';
+  
+  const res = await fetch(`${API}/ngo/${ngo.id}/requirements`);
+  const reqs = await res.json();
+  const sel = document.getElementById('req-select');
+  sel.innerHTML = '<option value="">General support for NGO</option>';
+  reqs.forEach(r => {
+    const pct = Math.round((r.current_amount / r.goal_amount) * 100);
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `${r.title} (${pct}% funded)`;
+    sel.appendChild(opt);
+  });
+}
+
+function setAmt(v) { 
+    document.getElementById('donor-amount').value = v; 
+    // Visual feedback for pills
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.innerText.replace(/,/g, '')) === v);
+    });
+}
+
+async function startPayment() {
+  const name = document.getElementById('donor-name').value.trim();
+  const email = document.getElementById('donor-email').value.trim();
+  const phone = document.getElementById('donor-phone').value.trim();
+  const amount = parseFloat(document.getElementById('donor-amount').value);
+  const reqId = document.getElementById('req-select').value;
+
+  if (!selectedNgoId) return showError('Please select an organization from the list');
+  if (!name || !email) return showError('Name and Email are required');
+  if (!amount || amount < 1) return showError('Minimum donation is ₹1');
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing Securely...';
+
+  try {
+    const orderRes = await fetch(`${API}/donations/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngo_id: selectedNgoId, amount, donor_name: name,
+        donor_email: email, donor_phone: phone,
+        requirement_id: reqId || null
+      })
+    });
+    const order = await orderRes.json();
+    if (!orderRes.ok) throw new Error(order.error);
+
+    const options = {
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'CareConnect',
+      description: `Donation to ${selectedNgoName}`,
+      order_id: order.orderId,
+      handler: async (response) => {
+        const verRes = await fetch(`${API}/donations/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            donation_id: order.donationId
+          })
+        });
+        const ver = await verRes.json();
+        if (ver.success) {
+          window.location.href = `donor-history.html?email=${encodeURIComponent(email)}&success=1`;
+        } else {
+          showError('Verification failed. Reference ID: ' + response.razorpay_payment_id);
+        }
+      },
+      prefill: { name, email, contact: phone },
+      theme: { color: '#1D9E75' },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    showError(err.message || 'Something went wrong');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Pay with Razorpay';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('pay-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+loadNGOs();
+</script>
+</body>
+</html>
