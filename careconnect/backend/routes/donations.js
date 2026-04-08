@@ -35,12 +35,20 @@ router.post('/create-order', async (req, res) => {
     });
 
     // Save pending donation
+    // const [result] = await db.query(
+    //   `INSERT INTO donations (ngo_id, requirement_id, donor_name, donor_email, donor_phone, amount, razorpay_order_id, status)
+    //    VALUES (?,?,?,?,?,?,'pending')`,
+    //    // Note: wait for verify before marking completed
+    //   [ngo_id, requirement_id || null, donor_name, donor_email, donor_phone || '', amount, order.id, 'pending']
+    // );
+// added code
     const [result] = await db.query(
-      `INSERT INTO donations (ngo_id, requirement_id, donor_name, donor_email, donor_phone, amount, razorpay_order_id, status)
-       VALUES (?,?,?,?,?,?,'pending')`,
-       // Note: wait for verify before marking completed
-      [ngo_id, requirement_id || null, donor_name, donor_email, donor_phone || '', amount, order.id, 'pending']
-    );
+  `INSERT INTO donations 
+   (ngo_id, requirement_id, donor_name, donor_email, donor_phone, amount, razorpay_order_id, status)
+   VALUES (?,?,?,?,?,?,?,?)`,
+  [ngo_id, requirement_id || null, donor_name, donor_email, donor_phone || '', amount, order.id, 'pending']
+);
+// added code'
 
     res.json({
       orderId:    order.id,
