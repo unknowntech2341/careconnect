@@ -15,8 +15,8 @@ CREATE TABLE admins (
 
 -- Predefined admins (passwords: admin123 / admin456)
 INSERT INTO admins (username, email, password) VALUES
-('admin1', 'admin@careconnect.org',  '$2b$10$U6iYX3kVQpAf3U6Z8OPOOOXz0jrm39QBJjFGZf7UGcgeMpgYJq8uO'),
-('admin2', 'admin2@careconnect.org', '$2b$10$8HLoTR4UUPo3V6oMgfNcCuF/6h3M7u02yrAjkgpcXJwJrIsYoX1b6');
+('admin1', 'admin@careconnect.org',  '$2a$10$HuQZW9la6fXwM/MtKmy/r.iN1o5GfVVkMZz2J0M.Kxp4I97MNVT/K'),
+('admin2', 'admin2@careconnect.org', '$2a$10$kaY0m0PKvv3mYDNW4s/aqe25/6pxm0vZ.IOb4ZhP5eqe2wLUvbhLm');
 
 -- NGOs
 CREATE TABLE ngos (
@@ -102,3 +102,5 @@ BEGIN
   END IF;
 END$$
 DELIMITER ;
+
+
